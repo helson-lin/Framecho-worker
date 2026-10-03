@@ -50,10 +50,7 @@ export const comments = sqliteTable(
   {
     id: text("id").primaryKey(),
     uploadId: text("upload_id").notNull(),
-    // Comment ownership key. Anonymous mode: a random id minted
-    // client-side and kept in localStorage. When OAuth sign-in is
-    // configured: the provider identity from the session cookie
-    // ("github:1234" / "google:5678"), enforced server-side.
+    // Provider identity from the verified OAuth session (github:1234 / google:5678).
     viewerId: text("viewer_id").notNull(),
     authorName: text("author_name").notNull(),
     // Provider avatar URL when the comment was made signed-in.
@@ -73,8 +70,7 @@ export const likes = sqliteTable(
   "likes",
   {
     uploadId: text("upload_id").notNull(),
-    // Same identity model as comments.viewer_id: the OAuth subject when
-    // sign-in is configured, an anonymous localStorage id otherwise.
+    // Same verified OAuth subject as comments.viewer_id.
     viewerId: text("viewer_id").notNull(),
     createdAt: text("created_at")
       .notNull()
