@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest, getRequestUrl } from "@tanstack/react-start/server";
+import { isUploadId } from "@/lib/upload-input";
 import { ShareViewer } from "@/components/share-viewer";
 import { VideoShare } from "@/components/video-share";
 import { getAuthState } from "@/lib/auth.server";
@@ -36,7 +37,7 @@ const loadShare = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/$id")({
   loader: async ({ params }) => {
-    if (!/^[a-f0-9]{8}$/.test(params.id)) throw notFound();
+    if (!isUploadId(params.id)) throw notFound();
     const share = await loadShare({ data: params.id });
     if (!share) throw notFound();
     return share;
@@ -54,8 +55,8 @@ export const Route = createFileRoute("/$id")({
     const duration = upload.duration
       ? ` · ${Math.round(upload.duration)}s`
       : "";
-    const description = `Shared by ${author.name} via Screendrop${duration}${dimensions}`;
-    const title = `${displayTitle} — Screendrop`;
+    const description = `Shared by ${author.name} via Framecho${duration}${dimensions}`;
+    const title = `${displayTitle} — Framecho`;
     const previewImage = isVideo
       ? upload.posterKey
         ? `${origin}/api/poster/${upload.id}`

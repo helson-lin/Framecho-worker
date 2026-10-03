@@ -1,27 +1,42 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { env } from "cloudflare:workers"
+import type { NewUpload } from "@/db/schema"
 import { db } from "@/db"
 import { uploads } from "@/db/schema"
 import { json, optionsResponse, protectedApi } from "@/lib/api.server"
-import { ensureSchema, isVideoContentType } from "@/lib/uploads.server"
+import { ensureSchema } from "@/lib/uploads.server"
+import { storeUpload } from "@/lib/store-upload"
+import {
+  newUploadId,
+  parseFilename,
+  parseMediaType,
+  parseOptionalNumber,
+  parseSocialEnabled,
+  parseTitle,
+} from "@/lib/upload-input"
 
-function parseOptionalInteger(value: FormDataEntryValue | string | null) {
-  if (typeof value !== "string" || value.length === 0) return null
-  const parsed = Number.parseInt(value, 10)
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-function parseOptionalNumber(value: FormDataEntryValue | string | null) {
-  if (typeof value !== "string" || value.length === 0) return null
-  const parsed = Number.parseFloat(value)
-  return Number.isFinite(parsed) ? parsed : null
-}
-
-// Comments/likes are on by default; only an explicit "false"/"0" turns
-// them off for this upload.
-function parseSocialEnabled(value: FormDataEntryValue | string | null) {
-  if (typeof value !== "string") return true
-  return value !== "false" && value !== "0"
+async function saveUpload(
+  request: Request,
+  body: ReadableStream,
+  metadata: Omit<NewUpload, "id" | "r2Key" | "size">,
+) {
+  await ensureSchema()
+  const id = newUploadId()
+  const filename = metadata.filename
+  const r2Key = `uploads/${id}/${filename}`
+  const object = await storeUpload(
+    env.BUCKET,
+    r2Key,
+    body,
+    {
+      httpMetadata: { contentType: metadata.contentType },
+      customMetadata: { originalName: filename },
+    },
+    (stored) =>
+      db.insert(uploads).values({ ...metadata, id, r2Key, size: stored.size }),
+  )
+  const origin = new URL(request.url).origin
+  return json({ id, url: `${origin}/${id}`, filename, size: object.size }, 201)
 }
 
 export const Route = createFileRoute("/api/upload")({
@@ -29,117 +44,61 @@ export const Route = createFileRoute("/api/upload")({
     handlers: {
       POST: async ({ request }) =>
         protectedApi(request, env.UPLOAD_TOKEN, async () => {
-          await ensureSchema()
-
           const formData = await request.formData()
           const file = formData.get("file")
-          if (!(file instanceof File)) {
+          if (!(file instanceof File))
             return json({ error: "No file provided" }, 400)
-          }
-
-          const id = crypto.randomUUID().split("-")[0]
-          const r2Key = `uploads/${id}/${file.name}`
+          const filename = parseFilename(file.name)
           const contentType = file.type || "application/octet-stream"
-          const requestedMediaType = formData.get("media_type")
-          const mediaType =
-            typeof requestedMediaType === "string" && requestedMediaType
-              ? requestedMediaType
-              : isVideoContentType(contentType)
-                ? "video"
-                : "image"
-
-          await env.BUCKET.put(r2Key, file.stream(), {
-            httpMetadata: { contentType },
-            customMetadata: { originalName: file.name },
-          })
-
           const rawTitle = formData.get("title")
-          const title =
-            typeof rawTitle === "string"
-              ? rawTitle.trim().slice(0, 200) || null
-              : null
-
-          await db.insert(uploads).values({
-            id,
-            filename: file.name,
-            contentType,
-            size: file.size,
-            width: parseOptionalInteger(formData.get("width")),
-            height: parseOptionalInteger(formData.get("height")),
-            r2Key,
-            mediaType,
-            duration: parseOptionalNumber(formData.get("duration")),
-            title,
-            socialEnabled: parseSocialEnabled(formData.get("social_enabled")),
-          })
-
-          const origin = new URL(request.url).origin
-          return json(
-            { id, url: `${origin}/${id}`, filename: file.name, size: file.size },
-            201,
-          )
-        }),
-
-      PUT: async ({ request }) =>
-        protectedApi(request, env.UPLOAD_TOKEN, async () => {
-          await ensureSchema()
-
-          const filename = request.headers.get("x-filename")
-          const contentType =
-            request.headers.get("content-type") || "application/octet-stream"
-
-          if (!filename) {
-            return json({ error: "X-Filename header is required" }, 400)
-          }
-
-          if (!request.body) {
-            return json({ error: "Request body is required" }, 400)
-          }
-
-          const id = crypto.randomUUID().split("-")[0]
-          const r2Key = `uploads/${id}/${filename}`
-          const requestedMediaType = request.headers.get("x-media-type")
-          const mediaType =
-            requestedMediaType ||
-            (isVideoContentType(contentType) ? "video" : "image")
-
-          await env.BUCKET.put(r2Key, request.body, {
-            httpMetadata: { contentType },
-            customMetadata: { originalName: filename },
-          })
-
-          const size = parseOptionalInteger(
-            request.headers.get("content-length"),
-          )
-
-          const rawTitle = request.headers.get("x-title")
-          const title = rawTitle
-            ? decodeURIComponent(rawTitle).trim().slice(0, 200) || null
-            : null
-
-          await db.insert(uploads).values({
-            id,
+          // Validate all metadata before any R2 or D1 write.
+          const metadata = {
             filename,
             contentType,
-            size: size ?? 0,
-            width: parseOptionalInteger(request.headers.get("x-width")),
-            height: parseOptionalInteger(request.headers.get("x-height")),
-            r2Key,
-            mediaType,
-            duration: parseOptionalNumber(request.headers.get("x-duration")),
-            title,
+            mediaType: parseMediaType(formData.get("media_type"), contentType),
+            width: parseOptionalNumber(formData.get("width"), "width", true),
+            height: parseOptionalNumber(formData.get("height"), "height", true),
+            duration: parseOptionalNumber(formData.get("duration"), "duration"),
+            title: parseTitle(typeof rawTitle === "string" ? rawTitle : null),
+            socialEnabled: parseSocialEnabled(formData.get("social_enabled")),
+          }
+          return saveUpload(request, file.stream(), metadata)
+        }),
+      PUT: async ({ request }) =>
+        protectedApi(request, env.UPLOAD_TOKEN, async () => {
+          const filename = parseFilename(request.headers.get("x-filename"))
+          if (!request.body)
+            return json({ error: "Request body is required" }, 400)
+          const contentType =
+            request.headers.get("content-type") || "application/octet-stream"
+          const metadata = {
+            filename,
+            contentType,
+            mediaType: parseMediaType(
+              request.headers.get("x-media-type"),
+              contentType,
+            ),
+            width: parseOptionalNumber(
+              request.headers.get("x-width"),
+              "width",
+              true,
+            ),
+            height: parseOptionalNumber(
+              request.headers.get("x-height"),
+              "height",
+              true,
+            ),
+            duration: parseOptionalNumber(
+              request.headers.get("x-duration"),
+              "duration",
+            ),
+            title: parseTitle(request.headers.get("x-title"), true),
             socialEnabled: parseSocialEnabled(
               request.headers.get("x-social-enabled"),
             ),
-          })
-
-          const origin = new URL(request.url).origin
-          return json(
-            { id, url: `${origin}/${id}`, filename, size: size ?? 0 },
-            201,
-          )
+          }
+          return saveUpload(request, request.body, metadata)
         }),
-
       OPTIONS: () => optionsResponse(),
     },
   },

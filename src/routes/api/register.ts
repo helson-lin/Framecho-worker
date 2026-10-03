@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { env } from "cloudflare:workers"
 import { z } from "zod"
+import { newUploadId } from "@/lib/upload-input"
 import { db } from "@/db"
 import { uploads } from "@/db/schema"
 import { json, optionsResponse, protectedApi } from "@/lib/api.server"
@@ -11,9 +12,9 @@ const registerUploadSchema = z.object({
   filename: z.string().min(1),
   content_type: z.string().optional(),
   size: z.number().nonnegative().optional(),
-  width: z.number().int().nullable().optional(),
-  height: z.number().int().nullable().optional(),
-  media_type: z.string().optional(),
+  width: z.number().int().nonnegative().nullable().optional(),
+  height: z.number().int().nonnegative().nullable().optional(),
+  media_type: z.enum(["image", "video"]).optional(),
   duration: z.number().nonnegative().nullable().optional(),
   title: z.string().trim().min(1).max(200).optional(),
   social_enabled: z.boolean().optional(),
@@ -42,9 +43,8 @@ export const Route = createFileRoute("/api/register")({
           }
 
           const data = parsed.data
-          const id = crypto.randomUUID().split("-")[0]
-          const contentType =
-            data.content_type || "application/octet-stream"
+          const id = newUploadId()
+          const contentType = data.content_type || "application/octet-stream"
           const mediaType =
             data.media_type ||
             (isVideoContentType(contentType) ? "video" : "image")

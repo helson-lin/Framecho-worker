@@ -1,12 +1,15 @@
 import { env } from "cloudflare:workers";
 import type { AuthState } from "@/lib/use-auth";
+import { safeRedirectPath } from "@/lib/redirect";
+
+export { safeRedirectPath } from "@/lib/redirect";
 
 /**
  * Optional OAuth sign-in for commenting. Self-hosters register their own
  * GitHub/Google OAuth app and provide the client id + secret as Worker
  * secrets; each configured provider shows up as a sign-in option. When
- * neither is configured, commenting stays anonymous (localStorage viewer
- * identity), so auth never blocks the Deploy-to-Cloudflare flow.
+ * neither is configured, comments and likes are hidden; uploading and
+ * viewing shares still work without OAuth.
  *
  * Sessions are a stateless HMAC-signed cookie carrying the provider
  * identity ({ sub, name, avatar }) — no users or sessions table. The
@@ -73,7 +76,11 @@ export async function getAuthState(request: Request): Promise<AuthState> {
     authEnabled,
     providers,
     user: sessionUser
-      ? { id: sessionUser.sub, name: sessionUser.name, avatar: sessionUser.avatar }
+      ? {
+          id: sessionUser.sub,
+          name: sessionUser.name,
+          avatar: sessionUser.avatar,
+        }
       : null,
   };
 }
@@ -194,12 +201,6 @@ interface OAuthState {
   exp: number;
 }
 
-/** Only same-site paths, so the login route can't be an open redirect. */
-export function safeRedirectPath(raw: string | null): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
-  return raw;
-}
-
 function callbackUrl(request: Request, provider: ProviderId): string {
   return `${new URL(request.url).origin}/api/auth/callback/${provider}`;
 }
@@ -281,7 +282,7 @@ async function fetchProviderUser(
       headers: {
         authorization: `Bearer ${token.access_token}`,
         accept: "application/vnd.github+json",
-        "user-agent": "screendrop-worker",
+        "user-agent": "framecho-worker",
       },
     });
     if (!userResponse.ok) return null;

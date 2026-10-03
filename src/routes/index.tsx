@@ -22,7 +22,7 @@ function HomePage() {
         />
         <div className="text-center">
           <h1 className="text-xl font-semibold text-neutral-900">
-            Screendrop Cloud
+            Framecho Cloud
           </h1>
           <p className="mt-1 text-sm text-neutral-500">
             Screenshot sharing by {author.name}
