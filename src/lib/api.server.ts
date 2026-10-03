@@ -1,10 +1,11 @@
 import { timingSafeEqual } from "node:crypto"
+import { InputError } from "@/lib/upload-input"
 
 const CORS_HEADERS = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   "access-control-allow-headers":
-    "Authorization, Content-Type, Content-Length, Range, X-Filename, X-Media-Type, X-Width, X-Height, X-Duration, X-Title",
+    "Authorization, Content-Type, Content-Length, Range, X-Filename, X-Media-Type, X-Width, X-Height, X-Duration, X-Title, X-Social-Enabled",
 } as const
 
 export function withCors(response: Response): Response {
@@ -71,6 +72,7 @@ export async function protectedApi(
   try {
     return await handler()
   } catch (error) {
+    if (error instanceof InputError) return json({ error: error.message }, 400)
     console.error(
       JSON.stringify({
         message: "API request failed",
