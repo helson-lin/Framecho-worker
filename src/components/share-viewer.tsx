@@ -1,11 +1,12 @@
-import { SkeletonLine, useKumoToastManager } from "@cloudflare/kumo";
+import { useKumoToastManager } from "@cloudflare/kumo";
 import { Button, LinkButton } from "@cloudflare/kumo/components/button";
 import { CopyIcon, DownloadSimpleIcon } from "@phosphor-icons/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Upload } from "@/db/schema";
 import type { Author } from "@/lib/uploads.server";
 import type { AuthState } from "@/lib/use-auth";
 import { CommentsPanel } from "@/components/comments-panel";
+import { LazyShareImage } from "@/components/lazy-share-image";
 import { LikeButton } from "@/components/like-button";
 import { ShareHeader } from "@/components/share-header";
 import { formatBytes, formatTimeAgo, formatViews } from "@/lib/format";
@@ -30,14 +31,9 @@ export function ShareViewer({
   auth: initialAuth,
 }: ShareViewerProps) {
   const mediaSource = `${origin}/api/image/${upload.id}`;
-  const [loadedImageSource, setLoadedImageSource] = useState<string | null>(
-    null,
-  );
   const [views, setViews] = useState(upload.views);
-  const imageRef = useRef<HTMLImageElement | null>(null);
   const toastManager = useKumoToastManager();
   const { auth, signOut } = useAuth(initialAuth);
-  const imageLoaded = loadedImageSource === mediaSource;
   // Comments/likes need both the upload's own switch and a deployment
   // that actually has sign-in configured.
   const showComments = upload.socialEnabled && auth.authEnabled;
@@ -48,13 +44,6 @@ export function ShareViewer({
       (counted) => counted && setViews((count) => count + 1),
     );
   }, [upload.id]);
-
-  useEffect(() => {
-    const image = imageRef.current;
-    if (image?.complete) {
-      setLoadedImageSource(mediaSource);
-    }
-  }, [mediaSource]);
 
   function showNotice(message: string, variant?: "error") {
     toastManager.add({ title: message, variant });
@@ -97,24 +86,12 @@ export function ShareViewer({
                 maxHeight: "calc(100vh - 56px - 240px)",
               }}
             >
-              {!imageLoaded && (
-                <SkeletonLine
-                  minWidth={100}
-                  maxWidth={100}
-                  minDuration={1.5}
-                  maxDuration={1.5}
-                  minDelay={0}
-                  maxDelay={0}
-                  className="h-full w-full"
-                />
-              )}
-              <img
-                ref={imageRef}
+              <LazyShareImage
+                key={mediaSource}
                 src={mediaSource}
                 alt={upload.filename}
-                className={`h-full w-full object-contain ${imageLoaded ? "block" : "hidden"}`}
-                onLoad={() => setLoadedImageSource(mediaSource)}
-                onError={() => setLoadedImageSource(mediaSource)}
+                width={upload.width}
+                height={upload.height}
               />
             </div>
 
@@ -210,6 +187,10 @@ function ImageInfo({
           <img
             src={author.avatar}
             alt={author.name}
+            loading="lazy"
+            decoding="async"
+            width={40}
+            height={40}
             className="size-10 shrink-0 rounded-full"
           />
           <div className="min-w-0">
