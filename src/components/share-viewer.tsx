@@ -6,6 +6,7 @@ import type { Upload } from "@/db/schema";
 import type { Author } from "@/lib/uploads.server";
 import type { AuthState } from "@/lib/use-auth";
 import { CommentsPanel } from "@/components/comments-panel";
+import { CopyMarkdownButton } from "@/components/copy-markdown-button";
 import { LazyShareImage } from "@/components/lazy-share-image";
 import { LikeButton } from "@/components/like-button";
 import { ShareHeader } from "@/components/share-header";
@@ -51,6 +52,7 @@ export function ShareViewer({
 
   const imageInfo = (
     <ImageInfo
+      origin={origin}
       upload={upload}
       author={author}
       views={views}
@@ -135,6 +137,7 @@ export function ShareViewer({
 }
 
 function ImageInfo({
+  origin,
   upload,
   author,
   views,
@@ -144,6 +147,7 @@ function ImageInfo({
   mediaSource,
   onNotify,
 }: {
+  origin: string;
   upload: Upload;
   author: Author;
   views: number;
@@ -156,7 +160,11 @@ function ImageInfo({
   const title = upload.title?.trim() || upload.filename;
   const dimensions =
     upload.width && upload.height ? `${upload.width} × ${upload.height}` : null;
-  const metadata = [dimensions, formatBytes(upload.size), formatTimeAgo(upload.createdAt)]
+  const metadata = [
+    dimensions,
+    formatBytes(upload.size),
+    formatTimeAgo(upload.createdAt),
+  ]
     .filter(Boolean)
     .join(" · ");
 
@@ -218,6 +226,11 @@ function ImageInfo({
           >
             Copy Image
           </Button>
+          <CopyMarkdownButton
+            upload={upload}
+            origin={origin}
+            onNotify={onNotify}
+          />
           <LinkButton
             href={mediaSource}
             download={upload.filename}

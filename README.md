@@ -4,6 +4,8 @@
 
 技术栈：TanStack Start / React / Kumo / Video.js，部署于 Cloudflare Workers；R2 存文件，D1 存分享元数据。
 
+服务只提供分享页面和 API，根地址 `/` 返回 404；分享页 Logo 链接到 Framecho 项目仓库。分享页的 **Copy Markdown** 可直接复制文档嵌入格式：图片使用原图地址，录屏使用可点击的封面（没有封面时使用分享链接）。
+
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/helson-lin/Framecho-worker)
 
 ## 部署

@@ -8,6 +8,7 @@ import type { Transcript } from "@/lib/transcript";
 import type { Chapter } from "@/components/video-player";
 import type { AuthState } from "@/lib/use-auth";
 import { CommentsPanel } from "@/components/comments-panel";
+import { CopyMarkdownButton } from "@/components/copy-markdown-button";
 import { LikeButton } from "@/components/like-button";
 import { ShareHeader } from "@/components/share-header";
 import { TranscriptPanel } from "@/components/transcript-panel";
@@ -171,6 +172,7 @@ export function VideoShare({
 
   const videoInfo = (
     <VideoInfo
+      origin={origin}
       upload={upload}
       author={author}
       views={views}
@@ -255,6 +257,7 @@ export function VideoShare({
 }
 
 function VideoInfo({
+  origin,
   upload,
   author,
   views,
@@ -264,6 +267,7 @@ function VideoInfo({
   mediaSource,
   onNotify,
 }: {
+  origin: string;
   upload: Upload;
   author: Author;
   views: number;
@@ -333,6 +337,11 @@ function VideoInfo({
           >
             Share
           </Button>
+          <CopyMarkdownButton
+            upload={upload}
+            origin={origin}
+            onNotify={onNotify}
+          />
           <LinkButton
             href={mediaSource}
             download={upload.filename}
