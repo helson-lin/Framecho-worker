@@ -7,15 +7,15 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Screendrop Cloud" },
+      { title: "Framecho Cloud" },
       {
         name: "description",
-        content: "Screenshot sharing powered by Screendrop",
+        content: "Screenshot sharing powered by Framecho",
       },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico" },
+      { rel: "icon", href: "/logo.png" },
     ],
   }),
   shellComponent: RootDocument,

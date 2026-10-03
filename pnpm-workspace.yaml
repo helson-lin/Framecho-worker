@@ -1,0 +1,7 @@
+# Native tooling required by Vite, Wrangler and ESLint.
+allowBuilds:
+  esbuild: true
+  # Prebuilt optional packages provide sharp; do not compile against global libvips.
+  sharp: false
+  unrs-resolver: true
+  workerd: true

@@ -1,0 +1,12 @@
+# 可选配置，不参与一键部署的 secret 提示。
+# 本地可复制到 .dev.vars，线上使用 wrangler secret put NAME 配置。
+AUTHOR_NAME=Your Name
+AUTHOR_AVATAR=https://github.com/your-username.png
+# OAuth App，不是 GitHub Application / GitHub App。
+# 回调：https://<your-worker>/api/auth/callback/github 或 /google
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+# 可选的独立会话签名密钥；未设置时使用 UPLOAD_TOKEN。
+AUTH_SECRET=

@@ -1,13 +1,14 @@
-import { initializeSchema } from "@/lib/schema.server";
 import { count, eq } from "drizzle-orm";
 import { env } from "cloudflare:workers";
+import versionManifest from "../../version.json";
 import type { Upload } from "@/db/schema";
 import type { Transcript } from "@/lib/transcript";
+import { initializeSchema } from "@/lib/schema.server";
 import { db } from "@/db";
 import { likes, uploads } from "@/db/schema";
 import { parseTranscript } from "@/lib/transcript";
 
-export const WORKER_VERSION = "1.0.0";
+export const WORKER_VERSION = versionManifest.version;
 
 export interface Author {
   name: string;
@@ -26,7 +27,7 @@ export function getAuthor(): Author {
     avatar:
       typeof configuredAvatar === "string" && configuredAvatar
         ? configuredAvatar
-        : "https://api.dicebear.com/10.x/glyphs/svg?seed=Screendrop",
+        : "https://api.dicebear.com/10.x/glyphs/svg?seed=Framecho",
   };
 }
 
