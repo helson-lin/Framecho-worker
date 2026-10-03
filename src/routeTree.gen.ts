@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IdRouteImport } from './routes/$id'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiVersionRouteImport } from './routes/api/version'
 import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as ApiSetupRouteImport } from './routes/api/setup'
@@ -35,11 +34,6 @@ import { Route as ApiAuthCallbackProviderRouteImport } from './routes/api/auth/c
 const IdRoute = IdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiVersionRoute = ApiVersionRouteImport.update({
@@ -144,7 +138,6 @@ const ApiAuthCallbackProviderRoute = ApiAuthCallbackProviderRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/$id': typeof IdRoute
   '/api/ping': typeof ApiPingRoute
   '/api/register': typeof ApiRegisterRoute
@@ -168,7 +161,6 @@ export interface FileRoutesByFullPath {
   '/api/auth/callback/$provider': typeof ApiAuthCallbackProviderRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/$id': typeof IdRoute
   '/api/ping': typeof ApiPingRoute
   '/api/register': typeof ApiRegisterRoute
@@ -193,7 +185,6 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/$id': typeof IdRoute
   '/api/ping': typeof ApiPingRoute
   '/api/register': typeof ApiRegisterRoute
@@ -219,7 +210,6 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/$id'
     | '/api/ping'
     | '/api/register'
@@ -243,7 +233,6 @@ export interface FileRouteTypes {
     | '/api/auth/callback/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/$id'
     | '/api/ping'
     | '/api/register'
@@ -267,7 +256,6 @@ export interface FileRouteTypes {
     | '/api/auth/callback/$provider'
   id:
     | '__root__'
-    | '/'
     | '/$id'
     | '/api/ping'
     | '/api/register'
@@ -292,7 +280,6 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   IdRoute: typeof IdRoute
   ApiPingRoute: typeof ApiPingRoute
   ApiRegisterRoute: typeof ApiRegisterRoute
@@ -322,13 +309,6 @@ declare module '@tanstack/react-router' {
       path: '/$id'
       fullPath: '/$id'
       preLoaderRoute: typeof IdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/version': {
@@ -487,7 +467,6 @@ const ApiUploadRouteWithChildren = ApiUploadRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   IdRoute: IdRoute,
   ApiPingRoute: ApiPingRoute,
   ApiRegisterRoute: ApiRegisterRoute,
