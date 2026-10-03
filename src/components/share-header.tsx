@@ -2,7 +2,7 @@ import { DropdownMenu } from "@cloudflare/kumo";
 import type { AuthUser } from "@/lib/use-auth";
 
 /** Sticky top bar shared by the video and screenshot share pages: the
- *  Framecho logo/home link, plus a sign-out menu when signed in. */
+ *  Framecho project link, plus a sign-out menu when signed in. */
 export function ShareHeader({
   user,
   onSignOut,
@@ -12,7 +12,10 @@ export function ShareHeader({
 }) {
   return (
     <header className="flex h-14 items-center justify-between border-b border-neutral-200 bg-white px-4">
-      <a href="/" className="flex items-center gap-2">
+      <a
+        href="https://github.com/helson-lin/Screendrop"
+        className="flex items-center gap-2"
+      >
         <img src="/logo.png" alt="" className="size-6" />
         <span className="font-semibold text-neutral-900">Framecho</span>
       </a>
