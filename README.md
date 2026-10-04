@@ -53,6 +53,8 @@ pnpm run build
 
 已有线上数据库可能通过运行时初始化创建过表，**不要直接运行历史 `db:migrate:remote`**，否则 Drizzle 的历史建表/加列操作可能与现有结构冲突。此次升级不会迁移或删除已有文件。
 
+拉取请求和推送到 `main` 时，GitHub Actions 会运行同样的测试、类型检查、lint 和构建（`.github/workflows/ci.yml`）；`main` 要求 **Test and build** 通过后才能合并。
+
 Worker 版本统一来自 `version.json`；`/api/version` 返回同一版本。Framecho 从本仓库 `main` 上的 `version.json` 检查可用更新。
 
 ## 可选配置
