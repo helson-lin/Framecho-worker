@@ -2,16 +2,10 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest, getRequestUrl } from "@tanstack/react-start/server";
 import { isUploadId } from "@/lib/upload-input";
-import { ShareViewer } from "@/components/share-viewer";
-import { VideoShare } from "@/components/video-share";
-import { getAuthState } from "@/lib/auth.server";
+import { SharePage } from "@/components/share-page";
+import { pickShareLocale } from "@/lib/share-locale";
 import { sharePreviewImage } from "@/lib/share-preview";
-import {
-  getAuthor,
-  getLikeCount,
-  getTranscript,
-  getUploadById,
-} from "@/lib/uploads.server";
+import { getAuthorName, getUploadById } from "@/lib/uploads.server";
 
 const loadShare = createServerFn({ method: "GET" })
   .validator((id: string) => id)
@@ -19,20 +13,13 @@ const loadShare = createServerFn({ method: "GET" })
     const upload = await getUploadById(id);
     if (!upload) return null;
 
-    // The transcript renders server-side so the page arrives readable
-    // (and indexable) without a second round trip.
-    const transcript =
-      upload.mediaType === "video" ? await getTranscript(upload) : null;
-
     return {
       upload,
-      author: getAuthor(),
+      authorName: getAuthorName(),
       origin: getRequestUrl().origin,
-      transcript,
-      likeCount: await getLikeCount(id),
-      // Resolved here (not client-side) so the comments/likes UI never
-      // has to flash in once a follow-up request comes back.
-      auth: await getAuthState(getRequest()),
+      // Chosen here so the server-rendered page and the hydrated one
+      // speak the same language.
+      locale: pickShareLocale(getRequest().headers.get("accept-language")),
     };
   });
 
@@ -46,7 +33,7 @@ export const Route = createFileRoute("/$id")({
   head: ({ loaderData }) => {
     if (!loaderData) return {};
 
-    const { upload, author, origin } = loaderData;
+    const { upload, authorName, origin } = loaderData;
     const isVideo = upload.mediaType === "video";
     const displayTitle = upload.title?.trim() || upload.filename;
     const dimensions =
@@ -56,7 +43,8 @@ export const Route = createFileRoute("/$id")({
     const duration = upload.duration
       ? ` · ${Math.round(upload.duration)}s`
       : "";
-    const description = `Shared by ${author.name} via Framecho${duration}${dimensions}`;
+    const sharedBy = authorName ? `Shared by ${authorName} via Framecho` : "Shared via Framecho";
+    const description = `${sharedBy}${duration}${dimensions}`;
     const title = `${displayTitle} — Framecho`;
     const previewImage = sharePreviewImage(upload, origin);
 
@@ -105,11 +93,7 @@ export const Route = createFileRoute("/$id")({
 });
 
 function SharedMediaPage() {
-  const share = Route.useLoaderData();
-  if (share.upload.mediaType === "video") {
-    return <VideoShare {...share} />;
-  }
-  return <ShareViewer {...share} />;
+  return <SharePage {...Route.useLoaderData()} />;
 }
 
 function ShareNotFound() {
