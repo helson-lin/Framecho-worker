@@ -30,132 +30,555 @@
   border-radius: 0 !important;
 }
 
-/* ─── Transcript frame-preview popover ───
-   Springy-but-snappy open/close: fade + cross-blur + slight scale,
-   sliding out from the anchor side. Open uses the slower clock, the
-   resting (closed) transition the faster one, so toggling one class
-   gives the open/close asymmetry. Shadow lives in drop-shadow() so it
-   wraps the notch silhouette, not the card's box. */
+/* ─── Share page ───
+   Natural white and greys, hairline dividers, one filled button. Every
+   colour is a variable on .share, so dark mode only swaps values. */
 
-.transcript-preview {
-  --tp-open: 320ms;
-  --tp-close: 200ms;
-  --tp-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --card-border: rgb(0 0 0 / 0.07);
-  opacity: 0;
-  transform: translateX(10px) scale(0.96);
-  transform-origin: right center;
-  filter: blur(2px);
-  will-change: transform, opacity, filter;
-  transition:
-    opacity var(--tp-close) var(--tp-ease),
-    transform var(--tp-close) var(--tp-ease),
-    filter var(--tp-close) var(--tp-ease);
+.share {
+  --bg: #fdfdfc;
+  --surface: #fff;
+  --ink: #252525;
+  --muted: #6f6f6c;
+  --faint: #a3a39f;
+  --line: #e8e8e4;
+  --hover: #efefeb;
+  --primary: #2b2b2b;
+  --primary-hover: #454545;
+  --on-primary: #fafaf8;
+  --stage: #f3f3f0;
+  --shadow: 0 6px 20px #2525251a;
+  --ring: #7a7a76;
+  --radius: 6px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --stage-max-h: min(68vh, 640px);
+  --ratio: 1.6;
+
+  container: share / inline-size;
+  min-height: 100vh;
+  padding-bottom: 40px;
+  background: var(--bg);
+  color: var(--ink);
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", sans-serif;
 }
 
-.transcript-preview.is-open {
-  opacity: 1;
-  transform: translateX(0) scale(1);
-  filter: blur(0);
-  transition:
-    opacity var(--tp-open) var(--tp-ease),
-    transform var(--tp-open) var(--tp-ease),
-    filter var(--tp-open) var(--tp-ease);
-}
-
-/* Thin ring drawn outside the card edge (continued around the notch by
-   its SVG stroke) plus a soft, low-opacity shadow that keeps the white
-   card white. */
-.transcript-preview-card {
-  box-shadow:
-    0 0 0 1px var(--card-border),
-    0 12px 28px rgb(0 0 0 / 0.09),
-    0 2px 6px rgb(0 0 0 / 0.04);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .transcript-preview {
-    transition: none !important;
+@media (prefers-color-scheme: dark) {
+  .share {
+    --bg: #161615;
+    --surface: #1f1f1e;
+    --ink: #ebebe8;
+    --muted: #9b9b97;
+    --faint: #6b6b68;
+    --line: #2b2b29;
+    --hover: #252524;
+    --primary: #ebebe8;
+    --primary-hover: #d4d4d0;
+    --on-primary: #161615;
+    --stage: #1c1c1b;
+    --shadow: 0 6px 20px #00000059;
+    --ring: #a3a39f;
+    color-scheme: dark;
   }
 }
 
-/* ─── Like button heart animation ───
-   From Transitions.dev: liking fills the heart, springs a pop, and
-   fires an 8-dot burst whose per-particle vectors (--px/--py/--pdur/
-   --pdelay/--psize) are seeded from JS on each like. The .t-like root
-   is a span inside a regular Kumo Button. */
-
-.t-like {
-  --like-color: #f40051;
-  --like-fill: 150ms;
-  --like-pop: 350ms;
-  --like-pop-ease: cubic-bezier(0.34, 1.96, 0.64, 1);
-  --like-particle-dur: 600ms;
-  --like-particle-size: 2.5px;
-  --like-ease: cubic-bezier(0.22, 1, 0.36, 1);
+.share :focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
 }
 
-.t-like-heart {
-  color: currentColor;
-  transition: color var(--like-fill) var(--like-ease);
+.share svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
-.t-like-heart path {
-  fill: transparent;
-  stroke: currentColor;
+
+/* The column follows the media's width (720–1080px), so the title,
+   actions and media share one left edge. */
+.share-top,
+.share-main {
+  width: min(1080px, calc(100% - 72px), max(720px, calc(var(--stage-max-h) * var(--ratio))));
+  margin: 0 auto;
+}
+
+.share-top {
+  height: 64px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+}
+
+.share-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: -0.2px;
+  border-radius: 4px;
+}
+
+.share-brand img {
+  width: 26px;
+  height: 26px;
+}
+
+.share-main {
+  margin-top: 30px;
+}
+
+.share-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.share-title-area {
+  min-width: 0;
+}
+
+.share h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.share-meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.share-sep {
+  margin: 0 7px;
+  color: var(--faint);
+}
+
+.share-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.share-button {
+  min-height: 38px;
+  padding: 9px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 450;
+  white-space: nowrap;
+  cursor: pointer;
   transition:
-    fill var(--like-fill) var(--like-ease),
-    stroke var(--like-fill) var(--like-ease);
-}
-.t-like[data-liked="true"] .t-like-heart {
-  color: var(--like-color);
-}
-.t-like[data-liked="true"] .t-like-heart path {
-  fill: currentColor;
-}
-/* Pop scale lives on an HTML wrapper, never the <svg> itself:
-   transforming an inline SVG makes Chromium rasterise it at 1×
-   (pixelated on hi-DPI). Wrapping keeps the vector crisp. */
-.t-like[data-liked="true"] .t-like-icon {
-  animation: t-like-pop var(--like-pop) var(--like-pop-ease);
-}
-@keyframes t-like-pop {
-  0% { transform: scale(1); }
-  30% { transform: scale(0.82); }
-  100% { transform: scale(1); }
+    background 0.15s var(--ease),
+    color 0.15s var(--ease);
 }
 
-/* Particle burst — 8 dots flung along per-particle vectors. */
-.t-like-particles {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-  color: var(--like-color);
+.share-button:hover {
+  background: var(--hover);
+  color: var(--ink);
 }
-.t-like-particles i {
-  position: absolute;
-  left: calc(var(--like-particle-size) * var(--psize, 1) / -2);
-  top: calc(var(--like-particle-size) * var(--psize, 1) / -2);
-  width: calc(var(--like-particle-size) * var(--psize, 1));
-  height: calc(var(--like-particle-size) * var(--psize, 1));
-  border-radius: 50%;
-  background: currentColor;
+
+.share-button:active {
+  transform: translateY(0.5px);
+}
+
+.share-button--primary {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.share-button--primary:hover {
+  background: var(--primary-hover);
+  color: var(--on-primary);
+}
+
+.share-button--secondary {
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink);
+}
+
+.share-icon-button {
+  min-width: 38px;
+  padding: 9px;
+}
+
+/* "Copy Markdown" ⇄ "Copied" share one grid cell, so the button keeps
+   the width of its longer label. */
+.share-swap {
+  display: inline-grid;
+}
+
+.share-swap > span {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: opacity 0.15s var(--ease);
+}
+
+.share-swap-done,
+.is-done .share-swap-idle {
   opacity: 0;
 }
-@keyframes t-like-burst {
-  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
-  20% { opacity: 1; transform: translate(calc(var(--px) * 0.25), calc(var(--py) * 0.25)) scale(1); }
-  100% { opacity: 0; transform: translate(var(--px), var(--py)) scale(var(--p-end-scale, 0.6)); }
+
+.is-done .share-swap-done {
+  opacity: 1;
 }
-.t-like.is-bursting .t-like-particles i {
-  animation: t-like-burst var(--pdur, var(--like-particle-dur)) ease-out var(--pdelay, 0ms) forwards;
+
+.share-more {
+  position: relative;
+}
+
+.share-menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 200px;
+  padding: 5px;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow:
+    0 0 0 1px var(--line),
+    var(--shadow);
+}
+
+.share-menu-item {
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.share-menu-item svg {
+  color: var(--muted);
+}
+
+.share-menu-item:hover {
+  background: var(--hover);
+}
+
+.share-menu-sep {
+  height: 1px;
+  margin: 5px 4px;
+  background: var(--line);
+}
+
+.share-menu-group {
+  padding: 6px 10px 8px;
+}
+
+.share-menu-label {
+  margin-bottom: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.share-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 2px;
+  border-radius: 6px;
+  background: var(--hover);
+}
+
+.share-toggle button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.share-toggle button[aria-checked="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.share-compact-only {
+  display: none;
+}
+
+/* Media at its own aspect ratio: no letterbox, no frame, one hairline. */
+.share-stage {
+  position: relative;
+  width: min(100%, calc(var(--stage-max-h) * var(--ratio)));
+  aspect-ratio: var(--ratio);
+  margin: 0 auto;
+  border-radius: var(--radius);
+}
+
+.share-stage.is-video {
+  overflow: hidden;
+  background: #111;
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.share-zoom {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--stage);
+  cursor: zoom-in;
+}
+
+.share-zoom:disabled {
+  cursor: default;
+}
+
+.share-zoom img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 1px var(--line);
+  opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+
+.share-zoom.is-loaded {
+  background: transparent;
+}
+
+.share-zoom.is-loaded img {
+  opacity: 1;
+}
+
+.share-zoom.is-loading {
+  animation: share-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes share-pulse {
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.share-stage.is-original {
+  width: 100%;
+  height: var(--stage-max-h);
+  aspect-ratio: auto;
+  overflow: auto;
+  background: var(--stage);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.share-stage.is-original .share-zoom {
+  width: max-content;
+  height: max-content;
+  margin: auto;
+  cursor: zoom-out;
+}
+
+.share-stage.is-original img {
+  width: auto;
+  height: auto;
+  max-width: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.share-stage:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  aspect-ratio: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  background: #111;
+}
+
+.share-stage:fullscreen img {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.share-image-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.share-image-error p {
+  margin: 0;
+}
+
+.share-hint {
+  margin: 10px 0 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.share-toast {
+  position: fixed;
+  z-index: 20;
+  bottom: 28px;
+  left: 50%;
+  max-width: calc(100vw - 32px);
+  padding: 11px 16px;
+  border-radius: 6px;
+  background: #303030;
+  color: #fff;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition:
+    opacity 0.18s var(--ease),
+    transform 0.18s var(--ease);
+}
+
+.share-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.share-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@container share (max-width: 1050px) {
+  .share-top,
+  .share-main {
+    width: calc(100% - 48px);
+  }
+
+  .share-heading {
+    gap: 20px;
+  }
+
+  .share-actions {
+    gap: 4px;
+  }
+
+  .share-button {
+    padding: 9px 10px;
+  }
+}
+
+/* Phones: one action row — Download and Copy Markdown share the width,
+   the link moves into the menu. */
+@container share (max-width: 800px) {
+  .share-top {
+    height: 56px;
+  }
+
+  .share-top,
+  .share-main {
+    width: calc(100% - 32px);
+  }
+
+  .share-main {
+    margin-top: 22px;
+  }
+
+  .share-heading {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .share h1 {
+    font-size: 20px;
+  }
+
+  .share-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+  }
+
+  .share-wide-only {
+    display: none;
+  }
+
+  .share-compact-only {
+    display: flex;
+  }
+
+  .share-button,
+  .share-menu-item {
+    min-height: 44px;
+  }
+
+  .share-icon-button {
+    min-width: 44px;
+  }
+
+  .share-toggle button {
+    min-height: 36px;
+  }
+
+  .share-brand {
+    font-size: 14px;
+  }
+
+  .share-brand img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .share-hint {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .t-like-icon,
-  .t-like-particles i {
+  .share *,
+  .share *::before,
+  .share *::after {
+    transition: none !important;
     animation: none !important;
   }
 }

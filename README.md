@@ -1,10 +1,14 @@
 # Framecho Worker
 
-[Framecho](https://github.com/helson-lin/Screendrop) 的自托管云端分享服务，由 helson-lin 独立维护。基于 [Screendrop Worker](https://github.com/fayazara/screendrop-worker)，保留其上传协议，支持截图、录屏、封面、字幕、预览图、评论和点赞。
+[Framecho](https://github.com/helson-lin/Screendrop) 的自托管云端分享服务，由 helson-lin 独立维护。基于 [Screendrop Worker](https://github.com/fayazara/screendrop-worker)，保留其上传协议，支持截图、录屏、封面和预览图。
 
 技术栈：TanStack Start / React / Kumo / Video.js，部署于 Cloudflare Workers；R2 存文件，D1 存分享元数据。
 
-服务只提供分享页面和 API，根地址 `/` 返回 404；分享页 Logo 链接到 Framecho 项目仓库。分享页的 **Copy Markdown** 可直接复制文档嵌入格式：图片使用原图地址，录屏使用可点击的封面（没有封面时使用分享链接）。
+服务只提供分享页面和 API，根地址 `/` 返回 404；分享页 Logo 链接到 Framecho 项目仓库。
+
+分享页是简约的单栏布局：标题、日期和媒体信息，媒体按原始比例显示。**下载**是唯一的填充按钮，**复制 Markdown** 紧挨其后，复制链接、复制图片、全屏和缩放（适配 / 原尺寸，也可直接点击图片切换）在更多菜单中；手机上复制链接也收进菜单，并在支持时调用系统分享。复制 Markdown 时图片使用原图地址，录屏使用可点击的封面（没有封面时使用分享链接）。页面按浏览器语言显示中文或英文，并跟随系统的浅色 / 深色外观。
+
+分享页不再显示评论、点赞、浏览数和字幕。对应的 API 和已有数据仍然保留（评论、点赞接口，字幕和预览图资源，浏览统计照常记录），恢复界面不需要迁移数据。
 
 Framecho 默认将截图以 AVIF 上传，并通过 `/api/assets/:id` 附带一张 JPEG 封面。分享链接的 `og:image` / `twitter:image` 有封面时优先使用封面，让不支持 AVIF 的聊天应用也能显示链接预览；旧版客户端上传的截图没有封面，仍使用原图。
 
@@ -18,7 +22,7 @@ Framecho 默认将截图以 AVIF 上传，并通过 `/api/assets/:id` 附带一�
 
 Worker URL 是分享服务地址，例如 `https://framecho-worker.<account>.workers.dev`，不是壁纸下载桶的域名。壁纸包和截图/录屏分享可以使用不同的 R2 桶。
 
-**上传和查看分享不需要 GitHub Application ID，也不需要 OAuth。** 评论和点赞需要部署后配置至少一个 OAuth 登录提供方，否则分享页会隐藏这两项功能。
+**上传和查看分享不需要 GitHub Application ID，也不需要 OAuth。** OAuth 只用于评论和点赞 API，分享页目前不提供这两项功能。
 
 手动部署：
 
@@ -62,8 +66,8 @@ Worker 版本统一来自 `version.json`；`/api/version` 返回同一版本。F
 | 配置 | 用途 |
 | --- | --- |
 | `UPLOAD_TOKEN` | 必填：认证上传、初始化和删除等管理操作 |
-| `AUTHOR_NAME` / `AUTHOR_AVATAR` | 分享页作者名和头像 |
-| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub **OAuth App**，用于评论和点赞登录 |
+| `AUTHOR_NAME` | 分享页显示的作者名；不配置时不显示 |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub **OAuth App**，用于评论和点赞 API 的登录 |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google OAuth 登录 |
 | `AUTH_SECRET` | 独立会话签名密钥；默认使用上传令牌 |
 

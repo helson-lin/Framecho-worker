@@ -1,6 +1,6 @@
 {
   "name": "framecho-worker",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Framecho Cloud — screenshot and recording sharing on Cloudflare Workers, R2 and D1",
   "private": true,
   "type": "module",
