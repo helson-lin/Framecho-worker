@@ -5,6 +5,7 @@ import { isUploadId } from "@/lib/upload-input";
 import { ShareViewer } from "@/components/share-viewer";
 import { VideoShare } from "@/components/video-share";
 import { getAuthState } from "@/lib/auth.server";
+import { sharePreviewImage } from "@/lib/share-preview";
 import {
   getAuthor,
   getLikeCount,
@@ -57,11 +58,7 @@ export const Route = createFileRoute("/$id")({
       : "";
     const description = `Shared by ${author.name} via Framecho${duration}${dimensions}`;
     const title = `${displayTitle} — Framecho`;
-    const previewImage = isVideo
-      ? upload.posterKey
-        ? `${origin}/api/poster/${upload.id}`
-        : null
-      : `${origin}/api/image/${upload.id}`;
+    const previewImage = sharePreviewImage(upload, origin);
 
     return {
       meta: [
