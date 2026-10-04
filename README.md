@@ -6,6 +6,8 @@
 
 服务只提供分享页面和 API，根地址 `/` 返回 404；分享页 Logo 链接到 Framecho 项目仓库。分享页的 **Copy Markdown** 可直接复制文档嵌入格式：图片使用原图地址，录屏使用可点击的封面（没有封面时使用分享链接）。
 
+Framecho 默认将截图以 AVIF 上传，并通过 `/api/assets/:id` 附带一张 JPEG 封面。分享链接的 `og:image` / `twitter:image` 有封面时优先使用封面，让不支持 AVIF 的聊天应用也能显示链接预览；旧版客户端上传的截图没有封面，仍使用原图。
+
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/helson-lin/Framecho-worker)
 
 ## 部署
