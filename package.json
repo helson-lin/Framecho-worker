@@ -7,7 +7,7 @@
   "cloudflare": {
     "bindings": {
       "UPLOAD_TOKEN": {
-        "description": "必填：打开 Framecho → 设置 → 云端，复制上传令牌并粘贴到这里。OAuth 登录可在部署完成后配置。"
+        "description": "Required: in Framecho, open Settings › Cloud and click “Copy Token and Deploy”. The token is already on your clipboard, so just paste it here (⌘V). OAuth sign-in can be set up after deploying.\n必填：在 Framecho 设置 › 云端点按「拷贝令牌并部署」，令牌已在剪贴板，直接粘贴（⌘V）。OAuth 登录可在部署完成后配置。\n必填：在 Framecho 設定 › 雲端按一下「拷貝權杖並部署」，權杖已在剪貼簿，直接貼上（⌘V）。OAuth 登入可在部署完成後設定。\nОбязательно: в Framecho откройте Настройки › Облако и нажмите «Скопировать токен и развернуть» — токен уже в буфере обмена, просто вставьте его (⌘V). Вход через OAuth можно настроить после развёртывания."
       }
     }
   },
