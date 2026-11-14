@@ -16,8 +16,8 @@ Framecho 默认将截图以 AVIF 上传，并通过 `/api/assets/:id` 附带一�
 
 ## 部署
 
-1. 打开 **Framecho → 设置 → 云端**，复制上传令牌。
-2. 点击部署按钮，将本仓库克隆到你的 GitHub 账号。首次部署只需填写 **`UPLOAD_TOKEN`**；Cloudflare 自动创建 R2 和 D1。
+1. 打开 **Framecho → 设置 → 云端**，点按 **拷贝令牌并部署**。Framecho 把上传令牌拷贝到剪贴板，并打开 Cloudflare 部署页。
+2. 部署页将本仓库克隆到你的 GitHub 账号。首次部署只需在 **`UPLOAD_TOKEN`** 中粘贴令牌（⌘V）；Cloudflare 自动创建 R2 和 D1。
 3. 将部署后的 Worker URL 填回 Framecho，然后点击 **验证连接**。客户端会调用 `/api/setup` 初始化数据库，再调用 `/api/ping` 验证令牌。
 
 Worker URL 是分享服务地址，例如 `https://framecho-worker.<account>.workers.dev`，不是壁纸下载桶的域名。壁纸包和截图/录屏分享可以使用不同的 R2 桶。

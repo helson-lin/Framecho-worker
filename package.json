@@ -7,7 +7,7 @@
   "cloudflare": {
     "bindings": {
       "UPLOAD_TOKEN": {
-        "description": "必填：打开 Framecho → 设置 → 云端，复制上传令牌并粘贴到这里。OAuth 登录可在部署完成后配置。"
+        "description": "Paste the token Framecho copied (Settings → Cloud). / 粘贴 Framecho 拷贝的令牌（设置 → 云端）。 / 貼上 Framecho 拷貝的權杖（設定 → 雲端）。 / Вставьте токен, скопированный Framecho (Настройки → Облако)."
       }
     }
   },
