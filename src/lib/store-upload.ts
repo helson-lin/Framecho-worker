@@ -8,13 +8,15 @@ export async function replaceStoredObject(
   persist: (object: R2Object) => Promise<unknown>,
 ): Promise<R2Object> {
   const sameKey = previousKey === key
-  const object = await bucket.put(
-    key,
-    body,
-    sameKey
-      ? options
-      : { ...options, onlyIf: new Headers({ "If-None-Match": "*" }) },
-  )
+  // Separate calls so the onlyIf overload stays nullable. One conditional
+  // options object makes put()'s return type non-null and the check below
+  // looks redundant to the type checker.
+  const object = sameKey
+    ? await bucket.put(key, body, options)
+    : await bucket.put(key, body, {
+        ...options,
+        onlyIf: new Headers({ "If-None-Match": "*" }),
+      })
   if (!object) throw new Error("Upload identifier collision; retry the upload")
   try {
     await persist(object)

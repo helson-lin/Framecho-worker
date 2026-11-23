@@ -52,7 +52,7 @@ export const Route = createFileRoute("/api/upload/$id")({
                   r2Key,
                   mediaType: metadata.mediaType,
                   duration: metadata.duration,
-                  contentRevision: (upload.contentRevision ?? 0) + 1,
+                  contentRevision: upload.contentRevision + 1,
                   ...(metadata.titleProvided ? { title: metadata.title } : {}),
                   ...(metadata.socialProvided
                     ? { socialEnabled: metadata.socialEnabled }
