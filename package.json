@@ -7,7 +7,7 @@
   "cloudflare": {
     "bindings": {
       "UPLOAD_TOKEN": {
-        "description": "Paste the token Framecho copied (Settings → Cloud). / 粘贴 Framecho 拷贝的令牌（设置 → 云端）。 / 貼上 Framecho 拷貝的權杖（設定 → 雲端）。 / Вставьте токен, скопированный Framecho (Настройки → Облако)."
+        "description": "Paste the token Framecho copied (Settings → Cloud). / 粘贴 Framecho 拷贝的令牌（设置 → 云端）。 / 貼上 Framecho 拷貝的權杖（設定 → 雲端）。 / Вставьте токен, скопированный Framecho (Настройки → Облако). / Framecho がコピーしたトークンを貼り付けてください（設定 → クラウド）。 / Framecho가 복사한 토큰을 붙여 넣으세요(설정 → 클라우드)."
       }
     }
   },

@@ -1,9 +1,16 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest, getRequestUrl } from "@tanstack/react-start/server";
+import type { ShareLocale } from "@/lib/share-locale";
 import { isUploadId } from "@/lib/upload-input";
 import { SharePage } from "@/components/share-page";
-import { pickShareLocale, shareDescription, shareLanguageTag, shareStrings } from "@/lib/share-locale";
+import {
+  pickShareLocale,
+  shareDescription,
+  shareLanguageTag,
+  shareStrings,
+} from "@/lib/share-locale";
 import { sharePreviewImage } from "@/lib/share-preview";
 import { shareAssetURL } from "@/lib/share-url";
 import { getAuthorName, getUploadById } from "@/lib/uploads.server";
@@ -102,7 +109,12 @@ function SharedMediaPage() {
 }
 
 function ShareNotFound() {
-  const locale = viewerLocale();
+  // The first render stays English on the server and the client. Reading
+  // Accept-Language here would import server-only code into the client build.
+  const [locale, setLocale] = useState<ShareLocale>("en");
+  useEffect(() => {
+    setLocale(pickShareLocale(navigator.languages.join(",")));
+  }, []);
   const strings = shareStrings[locale];
   return (
     <main
@@ -117,16 +129,4 @@ function ShareNotFound() {
       </div>
     </main>
   );
-}
-
-/** Accept-Language on the server, the browser list after hydration. */
-function viewerLocale() {
-  if (typeof window === "undefined") {
-    try {
-      return pickShareLocale(getRequest().headers.get("accept-language"));
-    } catch {
-      return "en" as const;
-    }
-  }
-  return pickShareLocale(navigator.languages.join(","));
 }
