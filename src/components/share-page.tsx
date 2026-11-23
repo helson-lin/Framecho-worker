@@ -16,6 +16,7 @@ import { buildShareMarkdown } from "@/lib/share-markdown";
 import { shareAssetURL } from "@/lib/share-url";
 import {
   formatShareDate,
+  shareLanguageTag,
   shareMetadata,
   shareStrings,
 } from "@/lib/share-locale";
@@ -151,7 +152,7 @@ export function SharePage({ upload, authorName, origin, locale }: SharePageProps
   return (
     <div
       className="share"
-      lang={locale === "zh" ? "zh-CN" : "en"}
+      lang={shareLanguageTag(locale)}
       style={{ "--ratio": ratio } as CSSProperties}
     >
       <header className="share-top">

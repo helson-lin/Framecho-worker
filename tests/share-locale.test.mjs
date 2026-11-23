@@ -6,23 +6,35 @@ const {
   module: { pickShareLocale, formatShareDate, formatLabel, shareMetadata, shareStrings },
 } = await loadModule("src/lib/share-locale.ts");
 
-test("viewers whose browser prefers Chinese get Chinese, everyone else English", () => {
-  assert.equal(pickShareLocale("zh-CN,zh;q=0.9,en;q=0.8"), "zh");
-  assert.equal(pickShareLocale("zh-TW"), "zh");
+test("the share page follows the browser's preferred Framecho language", () => {
+  assert.equal(pickShareLocale("zh-CN,zh;q=0.9,en;q=0.8"), "zh-Hans");
+  assert.equal(pickShareLocale("zh-TW"), "zh-Hant");
+  assert.equal(pickShareLocale("zh-HK,zh;q=0.8,en;q=0.5"), "zh-Hant");
   assert.equal(pickShareLocale("en-US,en;q=0.9,zh-CN;q=0.8"), "en");
-  assert.equal(pickShareLocale("en;q=0.5, zh-Hans;q=0.9"), "zh");
+  assert.equal(pickShareLocale("en;q=0.5, zh-Hans;q=0.9"), "zh-Hans");
   assert.equal(pickShareLocale("zh;q=0, en"), "en");
+  assert.equal(pickShareLocale("ru-RU,en;q=0.8"), "ru");
+  assert.equal(pickShareLocale("ja,en;q=0.5"), "ja");
+  assert.equal(pickShareLocale("ko-KR"), "ko");
+  assert.equal(pickShareLocale("fr,ru;q=0.8"), "ru");
   assert.equal(pickShareLocale(""), "en");
   assert.equal(pickShareLocale(null), "en");
 });
 
-test("both languages define every string", () => {
-  assert.deepEqual(Object.keys(shareStrings.zh).sort(), Object.keys(shareStrings.en).sort());
+test("every language defines the same strings", () => {
+  const english = Object.keys(shareStrings.en).sort();
+  for (const locale of Object.keys(shareStrings)) {
+    assert.deepEqual(Object.keys(shareStrings[locale]).sort(), english, locale);
+  }
 });
 
 test("dates are long-form and pinned to UTC, so server and client agree", () => {
-  assert.equal(formatShareDate("2026-10-04 23:30:00", "zh"), "2026年10月4日");
+  assert.equal(formatShareDate("2026-10-04 23:30:00", "zh-Hans"), "2026年10月4日");
+  assert.equal(formatShareDate("2026-10-04 23:30:00", "zh-Hant"), "2026年10月4日");
   assert.equal(formatShareDate("2026-10-04 23:30:00", "en"), "October 4, 2026");
+  assert.equal(formatShareDate("2026-10-04 23:30:00", "ja"), "2026年10月4日");
+  assert.equal(formatShareDate("2026-10-04 23:30:00", "ko"), "2026년 10월 4일");
+  assert.equal(formatShareDate("2026-10-04 23:30:00", "ru"), "4 октября 2026 г.");
   assert.equal(formatShareDate("not a date", "en"), "");
 });
 

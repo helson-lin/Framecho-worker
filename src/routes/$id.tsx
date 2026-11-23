@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest, getRequestUrl } from "@tanstack/react-start/server";
 import { isUploadId } from "@/lib/upload-input";
 import { SharePage } from "@/components/share-page";
-import { pickShareLocale } from "@/lib/share-locale";
+import { pickShareLocale, shareDescription, shareLanguageTag, shareStrings } from "@/lib/share-locale";
 import { sharePreviewImage } from "@/lib/share-preview";
 import { shareAssetURL } from "@/lib/share-url";
 import { getAuthorName, getUploadById } from "@/lib/uploads.server";
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/$id")({
   head: ({ loaderData }) => {
     if (!loaderData) return {};
 
-    const { upload, authorName, origin } = loaderData;
+    const { upload, authorName, origin, locale } = loaderData;
     const isVideo = upload.mediaType === "video";
     const displayTitle = upload.title?.trim() || upload.filename;
     const dimensions =
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/$id")({
     const duration = upload.duration
       ? ` · ${Math.round(upload.duration)}s`
       : "";
-    const sharedBy = authorName ? `Shared by ${authorName} via Framecho` : "Shared via Framecho";
+    const sharedBy = shareDescription(authorName, locale);
     const description = `${sharedBy}${duration}${dimensions}`;
     const title = `${displayTitle} — Framecho`;
     const previewImage = sharePreviewImage(upload, origin);
@@ -102,16 +102,31 @@ function SharedMediaPage() {
 }
 
 function ShareNotFound() {
+  const locale = viewerLocale();
+  const strings = shareStrings[locale];
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-neutral-100 px-6 text-center dark:bg-neutral-950">
+    <main
+      lang={shareLanguageTag(locale)}
+      className="flex min-h-dvh items-center justify-center bg-neutral-100 px-6 text-center dark:bg-neutral-950"
+    >
       <div>
         <h1 className="text-xl font-semibold text-neutral-900 dark:text-white">
-          Share not found
+          {strings.notFoundTitle}
         </h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          This screenshot or recording is no longer available.
-        </p>
+        <p className="mt-1 text-sm text-neutral-500">{strings.notFoundDetail}</p>
       </div>
     </main>
   );
+}
+
+/** Accept-Language on the server, the browser list after hydration. */
+function viewerLocale() {
+  if (typeof window === "undefined") {
+    try {
+      return pickShareLocale(getRequest().headers.get("accept-language"));
+    } catch {
+      return "en" as const;
+    }
+  }
+  return pickShareLocale(navigator.languages.join(","));
 }
