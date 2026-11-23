@@ -66,7 +66,9 @@ export async function serveMedia(
 
   const headers = new Headers()
   headers.set("content-type", row.content_type)
-  headers.set("cache-control", "public, max-age=31536000, immutable")
+  // Short enough that a replaced share is visible after a reload, while
+  // `?v=` on the page skips copies cached before this header existed.
+  headers.set("cache-control", "public, max-age=60, must-revalidate")
   headers.set("etag", object.httpEtag)
   headers.set("accept-ranges", "bytes")
 
@@ -99,7 +101,7 @@ export async function serveAsset(
 
   const headers = new Headers()
   headers.set("content-type", contentType)
-  headers.set("cache-control", "public, max-age=31536000, immutable")
+  headers.set("cache-control", "public, max-age=60, must-revalidate")
   headers.set("etag", object.httpEtag)
   return withCors(new Response(object.body, { headers }))
 }

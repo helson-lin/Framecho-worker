@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/captions/$id")({
           new Response(transcriptToVtt(transcript), {
             headers: {
               "content-type": "text/vtt; charset=utf-8",
-              "cache-control": "public, max-age=31536000, immutable",
+              "cache-control": "public, max-age=60, must-revalidate",
             },
           }),
         )

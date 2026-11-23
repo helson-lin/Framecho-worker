@@ -12,6 +12,7 @@ import {
   parseMediaType,
   parseOptionalNumber,
   parseSocialEnabled,
+  parseStreamMetadata,
   parseTitle,
 } from "@/lib/upload-input"
 
@@ -66,38 +67,19 @@ export const Route = createFileRoute("/api/upload")({
         }),
       PUT: async ({ request }) =>
         protectedApi(request, env.UPLOAD_TOKEN, async () => {
-          const filename = parseFilename(request.headers.get("x-filename"))
           if (!request.body)
             return json({ error: "Request body is required" }, 400)
-          const contentType =
-            request.headers.get("content-type") || "application/octet-stream"
-          const metadata = {
-            filename,
-            contentType,
-            mediaType: parseMediaType(
-              request.headers.get("x-media-type"),
-              contentType,
-            ),
-            width: parseOptionalNumber(
-              request.headers.get("x-width"),
-              "width",
-              true,
-            ),
-            height: parseOptionalNumber(
-              request.headers.get("x-height"),
-              "height",
-              true,
-            ),
-            duration: parseOptionalNumber(
-              request.headers.get("x-duration"),
-              "duration",
-            ),
-            title: parseTitle(request.headers.get("x-title"), true),
-            socialEnabled: parseSocialEnabled(
-              request.headers.get("x-social-enabled"),
-            ),
-          }
-          return saveUpload(request, request.body, metadata)
+          const parsed = parseStreamMetadata(request.headers)
+          return saveUpload(request, request.body, {
+            filename: parsed.filename,
+            contentType: parsed.contentType,
+            mediaType: parsed.mediaType,
+            width: parsed.width,
+            height: parsed.height,
+            duration: parsed.duration,
+            title: parsed.title,
+            socialEnabled: parsed.socialEnabled,
+          })
         }),
       OPTIONS: () => optionsResponse(),
     },

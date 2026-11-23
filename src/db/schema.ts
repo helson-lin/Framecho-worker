@@ -35,6 +35,8 @@ export const uploads = sqliteTable(
     // Optional JSON array of { title, start } chapter markers.
     chapters: text("chapters"),
     views: integer("views").notNull().default(0),
+    // Bumps when the media is replaced, so share pages can bypass a cached copy.
+    contentRevision: integer("content_revision").notNull().default(0),
     // Off switch for comments + likes on this upload, chosen at upload
     // time. When false, both features are hidden on the share page and
     // rejected server-side.

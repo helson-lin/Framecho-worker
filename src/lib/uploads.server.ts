@@ -17,6 +17,7 @@ export function getAuthorName(): string | null {
 }
 
 export async function getUploadById(id: string): Promise<Upload | null> {
+  await ensureSchema()
   const row = await db.query.uploads.findFirst({
     where: eq(uploads.id, id),
   });

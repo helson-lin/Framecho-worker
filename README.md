@@ -87,12 +87,12 @@ GitHub OAuth App 的回调为 `https://<your-worker>/api/auth/callback/github`�
 | `/api/upload` | PUT / POST | 流式上传 / multipart 上传 |
 | `/api/register` | POST | 注册已存入 R2 的媒体 |
 | `/api/assets/:id` | POST | 上传封面、字幕、预览图、标题、章节 |
-| `/api/upload/:id` | DELETE | 删除分享及相关数据 |
+| `/api/upload/:id` | PUT / DELETE | 用新文件替换该分享（链接不变）/ 删除分享及相关数据 |
 | `/:id` | GET | 公开分享页 |
 
 流式上传支持 `X-Filename`、`X-Media-Type`、`X-Width`、`X-Height`、`X-Duration`、`X-Title` 和 `X-Social-Enabled`。标题使用 UTF-8 百分号编码；非法编码和参数返回 400。返回 `{ id, url, filename, size }`，大小取自 R2 实际写入结果。
 
-媒体继续采用流式写入。R2 条件写入防止覆盖已有对象；D1 注册失败会尝试删除本次新写入的对象并记录清理失败。R2 与 D1 没有跨服务事务，网络异常造成的清理失败仍需运维处理。
+媒体继续采用流式写入。新建上传用 R2 条件写入防止覆盖已有对象；`PUT /api/upload/:id` 则覆盖该分享的文件并保留 id、评论和浏览数。D1 写入失败会尝试删掉这次新写入的对象。R2 与 D1 没有跨服务事务，网络异常造成的清理失败仍需运维处理。替换后的分享页在媒体地址上加 `?v=`，避免浏览器继续显示缓存的旧文件。
 
 `BUCKET` 绑定 R2，`DB` 绑定 D1。持有分享链接的人可查看和下载媒体；OAuth 只保护评论和点赞，不限制媒体访问。
 

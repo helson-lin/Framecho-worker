@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { loadModule } from "./load-module.mjs";
 
+const { url: shareURL } = await loadModule("src/lib/share-url.ts");
 const {
   module: { buildShareMarkdown },
-} = await loadModule("src/lib/share-markdown.ts");
+} = await loadModule("src/lib/share-markdown.ts", {
+  "@/lib/share-url": shareURL,
+});
 const upload = {
   id: "0123456789abcdef0123456789abcdef",
   filename: "截图.png",
@@ -38,6 +41,13 @@ test("videos without posters fall back to a portable Markdown link", () => {
       origin,
     ),
     `[演示](<${origin}/${upload.id}>)`,
+  );
+});
+
+test("a replaced share points Markdown at the new media bytes", () => {
+  assert.equal(
+    buildShareMarkdown({ ...upload, contentRevision: 2 }, origin),
+    `![截图.png](<${origin}/api/image/${upload.id}?v=2>)`,
   );
 });
 

@@ -13,6 +13,7 @@ import type { Upload } from "@/db/schema";
 import type { ShareLocale } from "@/lib/share-locale";
 import { VideoPlayer } from "@/components/video-player";
 import { buildShareMarkdown } from "@/lib/share-markdown";
+import { shareAssetURL } from "@/lib/share-url";
 import {
   formatShareDate,
   shareMetadata,
@@ -36,9 +37,13 @@ interface SharePageProps {
 export function SharePage({ upload, authorName, origin, locale }: SharePageProps) {
   const t = shareStrings[locale];
   const isVideo = upload.mediaType === "video";
-  const mediaSource = `${origin}/api/${isVideo ? "media" : "image"}/${upload.id}`;
+  const mediaSource = shareAssetURL(
+    origin,
+    `/api/${isVideo ? "media" : "image"}/${upload.id}`,
+    upload.contentRevision,
+  );
   const posterSource = upload.posterKey
-    ? `${origin}/api/poster/${upload.id}`
+    ? shareAssetURL(origin, `/api/poster/${upload.id}`, upload.contentRevision)
     : undefined;
   const title = upload.title?.trim() || upload.filename;
   const ratio =

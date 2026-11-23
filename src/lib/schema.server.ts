@@ -1,4 +1,4 @@
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 async function addColumn(
   database: D1Database,
@@ -79,6 +79,7 @@ export async function initializeSchema(
     ["chapters", "TEXT"],
     ["views", "INTEGER NOT NULL DEFAULT 0"],
     ["social_enabled", "INTEGER NOT NULL DEFAULT 1"],
+    ["content_revision", "INTEGER NOT NULL DEFAULT 0"],
   ];
   for (const [name, definition] of v2Columns) {
     if (!columnNames.has(name)) {

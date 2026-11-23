@@ -5,6 +5,7 @@ import { isUploadId } from "@/lib/upload-input";
 import { SharePage } from "@/components/share-page";
 import { pickShareLocale } from "@/lib/share-locale";
 import { sharePreviewImage } from "@/lib/share-preview";
+import { shareAssetURL } from "@/lib/share-url";
 import { getAuthorName, getUploadById } from "@/lib/uploads.server";
 
 const loadShare = createServerFn({ method: "GET" })
@@ -59,7 +60,11 @@ export const Route = createFileRoute("/$id")({
           ? [
               {
                 property: "og:video",
-                content: `${origin}/api/media/${upload.id}`,
+                content: shareAssetURL(
+                  origin,
+                  `/api/media/${upload.id}`,
+                  upload.contentRevision,
+                ),
               },
               { property: "og:video:type", content: upload.contentType },
               ...(upload.width && upload.height

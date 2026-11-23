@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm"
 import { db } from "@/db"
 import { comments, likes, uploads, viewEvents } from "@/db/schema"
 import { json, optionsResponse, protectedApi } from "@/lib/api.server"
+import { replaceStoredObject } from "@/lib/store-upload"
+import { isUploadId, parseStreamMetadata } from "@/lib/upload-input"
 import { ensureSchema, getUploadById } from "@/lib/uploads.server"
 
 /**
@@ -15,6 +17,61 @@ import { ensureSchema, getUploadById } from "@/lib/uploads.server"
 export const Route = createFileRoute("/api/upload/$id")({
   server: {
     handlers: {
+      // Replaces the media behind an existing share. The id and public URL stay.
+      PUT: async ({ params, request }) =>
+        protectedApi(request, env.UPLOAD_TOKEN, async () => {
+          if (!isUploadId(params.id)) {
+            return json({ error: "Upload not found" }, 404)
+          }
+          await ensureSchema()
+          const upload = await getUploadById(params.id)
+          if (!upload) return json({ error: "Upload not found" }, 404)
+          if (!request.body) {
+            return json({ error: "Request body is required" }, 400)
+          }
+          const metadata = parseStreamMetadata(request.headers)
+          const r2Key = `uploads/${upload.id}/${metadata.filename}`
+          const object = await replaceStoredObject(
+            env.BUCKET,
+            upload.r2Key,
+            r2Key,
+            request.body,
+            {
+              httpMetadata: { contentType: metadata.contentType },
+              customMetadata: { originalName: metadata.filename },
+            },
+            (stored) =>
+              db
+                .update(uploads)
+                .set({
+                  filename: metadata.filename,
+                  contentType: metadata.contentType,
+                  size: stored.size,
+                  width: metadata.width,
+                  height: metadata.height,
+                  r2Key,
+                  mediaType: metadata.mediaType,
+                  duration: metadata.duration,
+                  contentRevision: (upload.contentRevision ?? 0) + 1,
+                  ...(metadata.titleProvided ? { title: metadata.title } : {}),
+                  ...(metadata.socialProvided
+                    ? { socialEnabled: metadata.socialEnabled }
+                    : {}),
+                })
+                .where(eq(uploads.id, upload.id)),
+          )
+          const origin = new URL(request.url).origin
+          return json(
+            {
+              id: upload.id,
+              url: `${origin}/${upload.id}`,
+              filename: metadata.filename,
+              size: object.size,
+            },
+            200,
+          )
+        }),
+
       DELETE: async ({ params, request }) =>
         protectedApi(request, env.UPLOAD_TOKEN, async () => {
           await ensureSchema()

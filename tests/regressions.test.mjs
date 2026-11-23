@@ -129,6 +129,54 @@ test("R2 writes cannot overwrite a key and are removed on D1 failure", async () 
   }
 });
 
+test("replacing a share overwrites its object and keeps the previous key if registration fails", async () => {
+  const simulator = new Miniflare({
+    modules: true,
+    script: `${storageSource}
+      export default { async fetch(request, env) {
+        const url = new URL(request.url);
+        const key = url.pathname.slice(1);
+        const previous = request.headers.get("x-previous") || key;
+        try {
+          const object = await replaceStoredObject(env.BUCKET, previous, key, await request.text(), {}, async () => {
+            if (request.headers.get("x-fail")) throw new Error("D1 failed");
+          });
+          return Response.json({ size: object.size });
+        } catch (error) { return new Response(error.message, { status: 500 }); }
+      } }`,
+    compatibilityDate: "2026-07-17",
+    r2Buckets: ["BUCKET"],
+  });
+  try {
+    const bucket = await simulator.getR2Bucket("BUCKET");
+    const replace = (key, body, headers = {}) =>
+      simulator.dispatchFetch(`http://local/${key}`, { method: "PUT", body, headers });
+    const created = await replace("uploads/id/a.png", "old");
+    assert.equal(created.status, 200);
+    const overwritten = await replace("uploads/id/a.png", "new", {
+      "x-previous": "uploads/id/a.png",
+    });
+    assert.equal(overwritten.status, 200);
+    assert.equal(await (await bucket.get("uploads/id/a.png")).text(), "new");
+    const renamed = await replace("uploads/id/b.png", "renamed", {
+      "x-previous": "uploads/id/a.png",
+    });
+    assert.equal(renamed.status, 200);
+    assert.equal(await (await bucket.get("uploads/id/b.png")).text(), "renamed");
+    assert.equal(await bucket.head("uploads/id/a.png"), null);
+    await bucket.put("uploads/id/keep.png", "kept");
+    const failed = await replace("uploads/id/c.png", "nope", {
+      "x-previous": "uploads/id/keep.png",
+      "x-fail": "1",
+    });
+    assert.equal(failed.status, 500);
+    assert.equal(await bucket.head("uploads/id/c.png"), null);
+    assert.equal(await (await bucket.get("uploads/id/keep.png")).text(), "kept");
+  } finally {
+    await simulator.dispose();
+  }
+});
+
 test("cold concurrent schema upgrades preserve uploads and warm calls execute no DDL", async () => {
   const simulator = new Miniflare({
     modules: true,

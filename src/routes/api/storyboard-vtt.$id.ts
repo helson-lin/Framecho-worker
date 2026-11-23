@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/storyboard-vtt/$id")({
           new Response(storyboardToVtt(meta, spriteUrl, upload.duration), {
             headers: {
               "content-type": "text/vtt; charset=utf-8",
-              "cache-control": "public, max-age=31536000, immutable",
+              "cache-control": "public, max-age=60, must-revalidate",
             },
           }),
         )

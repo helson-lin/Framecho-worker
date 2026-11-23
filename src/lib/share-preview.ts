@@ -1,6 +1,9 @@
 import type { Upload } from "@/db/schema";
+import { shareAssetURL } from "@/lib/share-url";
 
-type PreviewUpload = Pick<Upload, "id" | "mediaType" | "posterKey">;
+type PreviewUpload = Pick<Upload, "id" | "mediaType" | "posterKey"> & {
+  contentRevision?: number | null
+}
 
 /**
  * The image link unfurls (og:image / twitter:image) point at. A poster wins
@@ -13,7 +16,9 @@ export function sharePreviewImage(
   origin: string,
 ): string | null {
   const id = encodeURIComponent(upload.id);
-  if (upload.posterKey) return new URL(`/api/poster/${id}`, origin).href;
+  if (upload.posterKey) {
+    return shareAssetURL(origin, `/api/poster/${id}`, upload.contentRevision)
+  }
   if (upload.mediaType === "video") return null;
-  return new URL(`/api/image/${id}`, origin).href;
+  return shareAssetURL(origin, `/api/image/${id}`, upload.contentRevision)
 }

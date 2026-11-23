@@ -2,9 +2,12 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { loadModule } from "./load-module.mjs";
 
+const { url: shareURL } = await loadModule("src/lib/share-url.ts");
 const {
   module: { sharePreviewImage },
-} = await loadModule("src/lib/share-preview.ts");
+} = await loadModule("src/lib/share-preview.ts", {
+  "@/lib/share-url": shareURL,
+});
 const origin = "https://screen.jarin.me";
 const id = "0123456789abcdef0123456789abcdef";
 
@@ -22,6 +25,16 @@ test("AVIF screenshots unfurl with their JPEG poster", () => {
       origin,
     ),
     `${origin}/api/poster/${id}`,
+  );
+});
+
+test("a replaced screenshot unfurls with a cache-busting query", () => {
+  assert.equal(
+    sharePreviewImage(
+      { id, mediaType: "image", posterKey: null, contentRevision: 3 },
+      origin,
+    ),
+    `${origin}/api/image/${id}?v=3`,
   );
 });
 

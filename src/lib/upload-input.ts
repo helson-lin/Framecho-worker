@@ -54,6 +54,36 @@ export function parseMediaType(
   return value;
 }
 
+export interface StreamUploadMetadata {
+  filename: string
+  contentType: string
+  mediaType: "image" | "video"
+  width: number | null
+  height: number | null
+  duration: number | null
+  title: string | null
+  titleProvided: boolean
+  socialEnabled: boolean
+  socialProvided: boolean
+}
+
+/** Headers for `PUT /api/upload` and `PUT /api/upload/:id`. */
+export function parseStreamMetadata(headers: Headers): StreamUploadMetadata {
+  const contentType = headers.get("content-type") || "application/octet-stream"
+  return {
+    filename: parseFilename(headers.get("x-filename")),
+    contentType,
+    mediaType: parseMediaType(headers.get("x-media-type"), contentType),
+    width: parseOptionalNumber(headers.get("x-width"), "width", true),
+    height: parseOptionalNumber(headers.get("x-height"), "height", true),
+    duration: parseOptionalNumber(headers.get("x-duration"), "duration"),
+    title: parseTitle(headers.get("x-title"), true),
+    titleProvided: headers.has("x-title"),
+    socialEnabled: parseSocialEnabled(headers.get("x-social-enabled")),
+    socialProvided: headers.has("x-social-enabled"),
+  }
+}
+
 export function parseFilename(value: string | null): string {
   if (
     !value ||
